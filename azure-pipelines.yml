@@ -1,0 +1,55 @@
+trigger:
+- main
+
+pool:
+  name: may-pool   
+
+stages:
+
+
+# BUILD STAGE hai
+
+- stage: Build
+  displayName: Build React App
+  jobs:
+  - job: Build
+    steps:
+
+    - checkout: self
+
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '18.x'
+      displayName: Install Node
+
+    - script: npm install
+      displayName: Install Dependencies
+
+    - script: npm run build
+      displayName: Build React App
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'build'
+        artifactName: 'app'
+
+
+# DEPLOY STAGE hai
+
+- stage: Deploy
+  displayName: Deploy to VM
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    steps:
+
+    - download: current
+      artifact: app
+
+    - script: |
+        sudo rm -rf /var/www/chat-application/*
+        sudo cp -r $(Pipeline.Workspace)/app/* /var/www/chat-application/
+      displayName: Copy files to nginx folder
+
+    - script: sudo systemctl restart nginx
+      displayName: Restart Nginx
