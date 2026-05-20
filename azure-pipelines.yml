@@ -7,7 +7,6 @@ pool:
 stages:
 
 - stage: Build
-  displayName: Build React App
   jobs:
   - job: BuildJob
     steps:
@@ -17,10 +16,10 @@ stages:
     - task: NodeTool@0
       inputs:
         versionSpec: '18.x'
-      displayName: Install Node.js
 
     - script: |
-        rm -rf node_modules package-lock.json
+        rmdir /s /q node_modules
+        del package-lock.json
         npm install --legacy-peer-deps
       displayName: Install Dependencies
 
