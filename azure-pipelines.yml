@@ -13,18 +13,11 @@ steps:
     versionSpec: '18.x'
   displayName: Install Node.js
 
-- script: |
-    echo "Cleaning old installs..."
-    if exist node_modules rmdir /s /q node_modules
-    if exist package-lock.json del package-lock.json
-
-    echo "Installing dependencies..."
-    npm install --legacy-peer-deps
-
+- script: npm install
   displayName: Install Dependencies
 
 - script: |
-    echo "Building React app..."
+    set NODE_OPTIONS=--openssl-legacy-provider
     npm run build
-
   displayName: Build App
+
