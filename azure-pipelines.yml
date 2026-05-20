@@ -7,12 +7,12 @@ pool:
 steps:
 
 # ======================
-# 1. SOURCE CODE
+# 1. SOURCE
 # ======================
 - checkout: self
 
 # ======================
-# 2. NODE INSTALL
+# 2. NODE
 # ======================
 - task: NodeTool@0
   inputs:
@@ -20,13 +20,13 @@ steps:
   displayName: Install Node.js
 
 # ======================
-# 3. INSTALL DEPENDENCIES
+# 3. INSTALL
 # ======================
 - script: npm install
   displayName: Install Dependencies
 
 # ======================
-# 4. BUILD REACT APP
+# 4. BUILD
 # ======================
 - script: npm run build
   displayName: Build App
@@ -41,7 +41,7 @@ steps:
   displayName: Publish Artifact
 
 # ======================
-# 6. DEPLOY TO VM 
+# 6. DOWNLOAD ARTIFACT ON VM SIDE (FIX)
 # ======================
 - task: SSH@0
   inputs:
@@ -50,8 +50,30 @@ steps:
     commands: |
       sudo rm -rf /var/www/chat-application/*
 
-      # copy from pipeline workspace (NOT VM path)
-      sudo cp -r $(Pipeline.Workspace)/app/* /var/www/chat-application/
+      # correct way: copy from agent via download not path
+      echo "Deploying files..."
 
+  displayName: Prepare VM
+
+# ======================
+# 7. ACTUAL COPY (FIXED WAY)
+# ======================
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'vm-ssh'
+    sourceFolder: 'build'
+    contents: '**'
+    targetFolder: '/var/www/chat-application'
+    cleanTargetFolder: true
+  displayName: Copy Build to VM
+
+# ======================
+# 8. RESTART NGINX
+# ======================
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'vm-ssh'
+    runOptions: 'commands'
+    commands: |
       sudo systemctl restart nginx
-  displayName: Deploy to VM
+  displayName: Restart Nginx
