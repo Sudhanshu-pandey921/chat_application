@@ -14,32 +14,13 @@ stages:
 
     - checkout: self
 
-    # Node install
     - task: NodeTool@0
       inputs:
-        versionSpec: '18.18.0'
+        versionSpec: '18.x'
       displayName: Install Node.js
 
-    # Clean install (Windows safe)
-    - script: |
-        echo Cleaning old files...
-        if exist node_modules rmdir /s /q node_modules
-        if exist package-lock.json del package-lock.json
-
-        echo Installing dependencies...
-        npm cache clean --force
-        npm install --legacy-peer-deps --no-audit --no-fund
+    - script: npm install --legacy-peer-deps
       displayName: Install Dependencies
 
-    # Build app
-    - script: |
-        echo Building React app...
-        npm run build
+    - script: npm run build
       displayName: Build App
-
-    # Publish artifact
-    - task: PublishBuildArtifacts@1
-      inputs:
-        pathToPublish: 'build'
-        artifactName: 'app'
-      displayName: Publish Build
