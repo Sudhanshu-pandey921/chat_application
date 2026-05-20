@@ -4,23 +4,27 @@ trigger:
 pool:
   name: may-pool
 
-stages:
+steps:
 
-- stage: Build
-  displayName: Build React App
-  jobs:
-  - job: BuildJob
-    steps:
+- checkout: self
 
-    - checkout: self
+- task: NodeTool@0
+  inputs:
+    versionSpec: '18.x'
+  displayName: Install Node.js
 
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '18.x'
-      displayName: Install Node.js
+- script: |
+    echo "Cleaning old installs..."
+    if exist node_modules rmdir /s /q node_modules
+    if exist package-lock.json del package-lock.json
 
-    - script: npm install --legacy-peer-deps
-      displayName: Install Dependencies
+    echo "Installing dependencies..."
+    npm install --legacy-peer-deps
 
-    - script: npm run build
-      displayName: Build App
+  displayName: Install Dependencies
+
+- script: |
+    echo "Building React app..."
+    npm run build
+
+  displayName: Build App
