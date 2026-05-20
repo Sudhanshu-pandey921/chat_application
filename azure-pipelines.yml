@@ -18,3 +18,11 @@ steps:
 
 - script: npm run build
   displayName: Build App
+
+- script: |
+    sudo rm -rf /var/www/chat-application/*
+    sudo cp -r build/* /var/www/chat-application/
+  displayName: Copy Build to VM
+
+- script: sudo systemctl restart nginx
+  displayName: Restart Nginx
