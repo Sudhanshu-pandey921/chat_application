@@ -6,40 +6,52 @@ pool:
 
 steps:
 
-
+# ======================
 # 1. SOURCE CODE
-
+# ======================
 - checkout: self
 
-
+# ======================
 # 2. NODE INSTALL
-
+# ======================
 - task: NodeTool@0
   inputs:
     versionSpec: '16.x'
   displayName: Install Node.js
 
-
+# ======================
 # 3. INSTALL DEPENDENCIES
-
+# ======================
 - script: npm install
   displayName: Install Dependencies
 
-
+# ======================
 # 4. BUILD REACT APP
-
+# ======================
 - script: npm run build
   displayName: Build App
 
+# ======================
+# 5. PUBLISH ARTIFACT
+# ======================
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'build'
+    artifactName: 'app'
+  displayName: Publish Artifact
 
-# 5. DEPLOY TO VM (SSH)
-
+# ======================
+# 6. DEPLOY TO VM 
+# ======================
 - task: SSH@0
   inputs:
     sshEndpoint: 'vm-ssh'
     runOptions: 'commands'
     commands: |
       sudo rm -rf /var/www/chat-application/*
-      sudo cp -r /home/azureuser/chat-application/build/* /var/www/chat-application/
+
+      # copy from pipeline workspace (NOT VM path)
+      sudo cp -r $(Pipeline.Workspace)/app/* /var/www/chat-application/
+
       sudo systemctl restart nginx
   displayName: Deploy to VM
